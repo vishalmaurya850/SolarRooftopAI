@@ -2,7 +2,7 @@ import Link from "next/link"
 import { FileText, Code, BookOpen, Download, ExternalLink } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Button } from "@/components/ui/button"
+// import { Button } from "@/components/ui/button"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 
 export default function DocumentationPage() {
@@ -13,10 +13,10 @@ export default function DocumentationPage() {
           <h1 className="text-3xl font-bold">Documentation</h1>
           <p className="text-gray-600">Complete guide to using SolarScan AI</p>
         </div>
-        <Button className="gap-2">
+        {/* <Button className="gap-2">
           <Download className="h-4 w-4" />
           Download PDF Guide
-        </Button>
+        </Button> */}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
@@ -33,7 +33,7 @@ export default function DocumentationPage() {
               Step-by-step instructions for uploading images, interpreting results, and making decisions based on your
               solar analysis.
             </p>
-            <Link href="#user-guide" className="text-yellow-600 font-medium hover:underline">
+            <Link href="#setup" className="text-yellow-600 font-medium hover:underline">
               Read the guide →
             </Link>
           </CardContent>
@@ -52,9 +52,9 @@ export default function DocumentationPage() {
               Technical documentation for developers looking to integrate SolarScan AI capabilities into their own
               applications.
             </p>
-            <Link href="#api-reference" className="text-yellow-600 font-medium hover:underline">
+            {/* <Link href="#api-reference" className="text-yellow-600 font-medium hover:underline">
               View API docs →
-            </Link>
+            </Link> */}
           </CardContent>
         </Card>
 
@@ -71,9 +71,9 @@ export default function DocumentationPage() {
               Educational resources about solar panel technology, installation processes, maintenance requirements, and
               more.
             </p>
-            <Link href="#knowledge-base" className="text-yellow-600 font-medium hover:underline">
+            {/* <Link href="#knowledge-base" className="text-yellow-600 font-medium hover:underline">
               Explore resources →
-            </Link>
+            </Link> */}
           </CardContent>
         </Card>
       </div>
@@ -107,10 +107,14 @@ export default function DocumentationPage() {
                 <h3 className="text-lg font-medium mb-3">Environment Variables</h3>
                 <div className="bg-gray-50 p-4 rounded-lg">
                   <pre className="text-sm">
-                    {`DATABASE_URL="postgresql://..."
-OPENAI_API_KEY="sk-..."
-NEXTAUTH_SECRET="your-secret-key"
-NEXTAUTH_URL="http://localhost:3000"`}
+                    {`NEXTAUTH_SECRET=your_secret_key 
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+# Recommended for most uses
+DATABASE_URL=postgresql://username:password@host:port/database
+# For NeonDB
+OPENROUTER_API_KEY=your_openrouter_api_key"`}
                   </pre>
                 </div>
               </div>
@@ -130,12 +134,7 @@ NEXTAUTH_URL="http://localhost:3000"`}
 
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h4 className="font-medium mb-2">3. Set up the database</h4>
-                    <pre className="text-sm text-gray-700">npx prisma migrate dev</pre>
-                  </div>
-
-                  <div className="bg-gray-50 p-4 rounded-lg">
-                    <h4 className="font-medium mb-2">4. Seed the database (optional)</h4>
-                    <pre className="text-sm text-gray-700">npx prisma db seed</pre>
+                    <pre className="text-sm text-gray-700">npx prisma generate && npx prisma migrate dev</pre>
                   </div>
 
                   <div className="bg-gray-50 p-4 rounded-lg">
@@ -233,7 +232,7 @@ NEXTAUTH_URL="http://localhost:3000"`}
                       <li>• Next.js API routes</li>
                       <li>• Prisma ORM</li>
                       <li>• NeonDB PostgreSQL</li>
-                      <li>• OpenAI GPT-4 Vision</li>
+                      <li>• Google Gemini flash Vision</li>
                     </ul>
                   </div>
                 </div>
@@ -242,7 +241,7 @@ NEXTAUTH_URL="http://localhost:3000"`}
               <div>
                 <h3 className="text-lg font-medium mb-3">AI Integration</h3>
                 <p className="text-gray-700 mb-4">
-                  The system uses OpenAI's GPT-4 Vision model to analyze rooftop images and extract relevant data for
+                  The system uses Google Gemini flash Vision model to analyze rooftop images and extract relevant data for
                   solar potential assessment.
                 </p>
                 <div className="bg-blue-50 p-4 rounded-lg">
