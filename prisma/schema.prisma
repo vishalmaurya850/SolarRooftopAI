@@ -1,0 +1,279 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  firstName    String?  @map("first_name")
+  lastName     String?  @map("last_name")
+  role         UserRole @default(USER)
+  phone        String?
+  company      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  properties      Property[]
+  analysisHistory AnalysisHistory[]
+  quotes          Quote[]
+
+  @@map("users")
+}
+
+model Property {
+  id                     String       @id @default(cuid())
+  userId                 String       @map("user_id")
+  address                String
+  city                   String
+  state                  String
+  zipCode                String       @map("zip_code")
+  country                String       @default("United States")
+  latitude               Float?
+  longitude              Float?
+  propertyType           PropertyType @map("property_type")
+  roofType               String?      @map("roof_type")
+  buildingAge            Int?         @map("building_age")
+  electricalPanelCapacity Int?        @map("electrical_panel_capacity")
+  createdAt              DateTime     @default(now()) @map("created_at")
+  updatedAt              DateTime     @updatedAt @map("updated_at")
+
+  user     User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  images   Image[]
+  analyses Analysis[]
+
+  @@map("properties")
+}
+
+model Image {
+  id           String      @id @default(cuid())
+  propertyId   String      @map("property_id")
+  fileName     String      @map("file_name")
+  filePath     String      @map("file_path")
+  fileSize     Int         @map("file_size")
+  fileType     String      @map("file_type")
+  width        Int?
+  height       Int?
+  uploadStatus UploadStatus @default(UPLOADED) @map("upload_status")
+  createdAt    DateTime    @default(now()) @map("created_at")
+
+  property Property   @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  analyses Analysis[]
+
+  @@map("images")
+}
+
+model SolarPanelType {
+  id           String    @id @default(cuid())
+  name         String
+  manufacturer String
+  efficiency   Float
+  powerOutput  Int       @map("power_output") // in Watts
+  dimensions   String?
+  weight       Float?    // in kg
+  warrantyYears Int?     @map("warranty_years")
+  pricePerWatt Float?    @map("price_per_watt")
+  panelType    PanelType @map("panel_type")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  recommendations Recommendation[]
+
+  @@map("solar_panel_types")
+}
+
+model Analysis {
+  id               String           @id @default(cuid())
+  propertyId       String           @map("property_id")
+  imageId          String?          @map("image_id")
+  status           AnalysisStatus   @default(PENDING)
+  roofArea         Float?           @map("roof_area") // in square meters
+  usableArea       Float?           @map("usable_area") // in square meters
+  orientation      String?
+  tilt             Float?           // in degrees
+  shading          String?
+  annualSunHours   Int?             @map("annual_sun_hours")
+  potentialCapacity Float?          @map("potential_capacity") // in kW
+  annualProduction Int?             @map("annual_production") // in kWh
+  confidenceScore  Float?           @map("confidence_score")
+  suitabilityScore Int?             @map("suitability_score") // out of 100
+  analysisData     Json?            @map("analysis_data") // for additional analysis data
+  aiModelUsed      String?          @map("ai_model_used")
+  processingTime   Int?             @map("processing_time") // in seconds
+  createdAt        DateTime         @default(now()) @map("created_at")
+  updatedAt        DateTime         @updatedAt @map("updated_at")
+
+  property             Property              @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  image                Image?                @relation(fields: [imageId], references: [id])
+  recommendations      Recommendation[]
+  financialCalculations FinancialCalculation[]
+  analysisHistory      AnalysisHistory[]
+  quotes               Quote[]
+
+  @@map("analyses")
+}
+
+model Recommendation {
+  id                     String   @id @default(cuid())
+  analysisId             String   @map("analysis_id")
+  panelTypeId            String?  @map("panel_type_id")
+  panelCount             Int?     @map("panel_count")
+  mountingSystem         String?  @map("mounting_system")
+  inverterType           String?  @map("inverter_type")
+  additionalEquipment    Json?    @map("additional_equipment")
+  installationComplexity String? @map("installation_complexity")
+  permitRequirements     String?  @map("permit_requirements")
+  additionalNotes        String?  @map("additional_notes")
+  createdAt              DateTime @default(now()) @map("created_at")
+  updatedAt              DateTime @updatedAt @map("updated_at")
+
+  analysis  Analysis        @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  panelType SolarPanelType? @relation(fields: [panelTypeId], references: [id])
+
+  @@map("recommendations")
+}
+
+model FinancialCalculation {
+  id                        String   @id @default(cuid())
+  analysisId                String   @map("analysis_id")
+  estimatedCost             Float?   @map("estimated_cost") // in USD
+  federalTaxCredit          Float?   @map("federal_tax_credit") // in USD
+  stateTaxCredit            Float?   @map("state_tax_credit") // in USD
+  utilityRebate             Float?   @map("utility_rebate") // in USD
+  netCost                   Float?   @map("net_cost") // in USD
+  annualSavings             Float?   @map("annual_savings") // in USD
+  paybackPeriod             Float?   @map("payback_period") // in years
+  roi25Year                 Float?   @map("roi_25_year") // percentage
+  co2Reduction              Float?   @map("co2_reduction") // tons per year
+  electricityRate           Float?   @map("electricity_rate") // $/kWh
+  annualElectricityIncrease Float?   @map("annual_electricity_increase") // percentage
+  financingOptions          Json?    @map("financing_options")
+  createdAt                 DateTime @default(now()) @map("created_at")
+  updatedAt                 DateTime @updatedAt @map("updated_at")
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+
+  @@map("financial_calculations")
+}
+
+model Region {
+  id                   String   @id @default(cuid())
+  name                 String
+  state                String
+  country              String   @default("United States")
+  averageSunHours      Int?     @map("average_sun_hours")
+  averageElectricityRate Float? @map("average_electricity_rate")
+  stateIncentives      Json?    @map("state_incentives")
+  utilityIncentives    Json?    @map("utility_incentives")
+  netMeteringAvailable Boolean  @default(true) @map("net_metering_available")
+  createdAt            DateTime @default(now()) @map("created_at")
+  updatedAt            DateTime @updatedAt @map("updated_at")
+
+  @@map("regions")
+}
+
+model Installer {
+  id             String   @id @default(cuid())
+  companyName    String   @map("company_name")
+  contactEmail   String   @map("contact_email")
+  contactPhone   String?  @map("contact_phone")
+  address        String?
+  city           String?
+  state          String?
+  zipCode        String?  @map("zip_code")
+  licenseNumber  String?  @map("license_number")
+  certifications Json?
+  serviceAreas   Json?    @map("service_areas")
+  rating         Float?
+  reviewsCount   Int      @default(0) @map("reviews_count")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  quotes Quote[]
+
+  @@map("installers")
+}
+
+model Quote {
+  id                   String      @id @default(cuid())
+  analysisId           String      @map("analysis_id")
+  installerId          String?     @map("installer_id")
+  userId               String      @map("user_id")
+  quoteAmount          Float?      @map("quote_amount")
+  installationTimeline String?     @map("installation_timeline")
+  warrantyDetails      String?     @map("warranty_details")
+  status               QuoteStatus @default(PENDING)
+  validUntil           DateTime?   @map("valid_until")
+  notes                String?
+  createdAt            DateTime    @default(now()) @map("created_at")
+  updatedAt            DateTime    @updatedAt @map("updated_at")
+
+  analysis  Analysis   @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  installer Installer? @relation(fields: [installerId], references: [id])
+  user      User       @relation(fields: [userId], references: [id])
+
+  @@map("quotes")
+}
+
+model AnalysisHistory {
+  id         String   @id @default(cuid())
+  analysisId String   @map("analysis_id")
+  userId     String?  @map("user_id")
+  action     String
+  details    Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  analysis Analysis @relation(fields: [analysisId], references: [id], onDelete: Cascade)
+  user     User?    @relation(fields: [userId], references: [id])
+
+  @@map("analysis_history")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  INSTALLER
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+  OTHER
+}
+
+enum UploadStatus {
+  UPLOADED
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum PanelType {
+  MONOCRYSTALLINE
+  POLYCRYSTALLINE
+  THIN_FILM
+}
+
+enum AnalysisStatus {
+  PENDING
+  PROCESSING
+  COMPLETED
+  FAILED
+}
+
+enum QuoteStatus {
+  PENDING
+  SENT
+  ACCEPTED
+  REJECTED
+  EXPIRED
+}
